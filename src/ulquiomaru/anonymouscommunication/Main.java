@@ -8,13 +8,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 
-import java.io.Serializable;
-
 public class Main extends Application {
 
-    static Controller controller;
     static boolean isServer = false;
 
+    static Controller controller;
     private static TextArea txtChat;
     static NetworkConnection connection = isServer ? createServer() : createClient();
 
@@ -48,10 +46,6 @@ public class Main extends Application {
 
     private static Client createClient() {
         return new Client("127.0.0.1", 55555, data -> Platform.runLater(() -> txtChat.appendText(data.toString() + "\n")));
-    }
-
-    private static void readEncryptedMessage(String data) {
-
     }
 
     public static void main(String[] args) {

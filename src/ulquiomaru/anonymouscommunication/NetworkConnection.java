@@ -14,7 +14,7 @@ public abstract class NetworkConnection {
 
     private ConnectionThread connThread = new ConnectionThread();
     private Consumer<Serializable> onReceiveCallback;
-    private static final String ALGORITHM_AES = "AES/CBC/PKCS5Padding";
+    private static final String MESSAGE_ALGORITHM_AES = "AES/CBC/PKCS5Padding";
 
 
     NetworkConnection(Consumer<Serializable> onReceiveCallback) {
@@ -55,9 +55,8 @@ public abstract class NetworkConnection {
                 socket.setTcpNoDelay(true);
 
                 while (true) {
-                    Serializable data = (Serializable) in.readObject();
+                    byte[] data = (byte[]) in.readObject();
                     decryptMessage(data);
-//                    onReceiveCallback.accept(data);
                 }
             } catch (Exception e) {
                 onReceiveCallback.accept("Connection closed");
@@ -68,7 +67,7 @@ public abstract class NetworkConnection {
 
 
     void encryptMessage(String message) throws Exception {
-        Cipher cipher = Cipher.getInstance(ALGORITHM_AES);
+        Cipher cipher = Cipher.getInstance(MESSAGE_ALGORITHM_AES);
         byte[] iV = new byte[cipher.getBlockSize()];
         SecureRandom RNG = new SecureRandom();
         RNG.nextBytes(iV);
@@ -77,25 +76,24 @@ public abstract class NetworkConnection {
         byte[] cipherText = cipher.doFinal(message.getBytes(StandardCharsets.UTF_8));
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        output.write(cipherText);
         output.write(iV);
-        byte[] sendData = output.toByteArray();
+        output.write(cipherText);
 
-        send(sendData);
-
+        send(output.toByteArray());
     }
 
-    void decryptMessage(Serializable receivedData) throws Exception {
-        byte[] data = (byte[]) receivedData;
-        Cipher cipher = Cipher.getInstance(ALGORITHM_AES);
+    void decryptMessage(byte[] data) throws Exception {
+        Cipher cipher = Cipher.getInstance(MESSAGE_ALGORITHM_AES);
         byte[] iV = new byte[cipher.getBlockSize()];
         System.arraycopy(data, 0, iV, 0, iV.length);
-        byte[] cipherText = new byte[data.length- iV.length];
+        byte[] cipherText = new byte[data.length - iV.length];
         System.arraycopy(data, iV.length, cipherText, 0, cipherText.length);
 
         cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
 
-        byte[] plainText = cipher.doFinal(cipherText);
+        byte[] plainTextInBytes = cipher.doFinal(cipherText);
+
+        String plainText = new String(plainTextInBytes, StandardCharsets.UTF_8);
 
         onReceiveCallback.accept(plainText);
     }
