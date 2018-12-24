@@ -14,7 +14,7 @@ public class Main extends Application {
     static boolean isServer = false;
 
     private static TextArea txtChat;
-    static NetworkConnection connection = isServer ? createServer() : createClient();
+    static NetworkConnection connection = isServer ? createServer(55555) : createClient(55555);
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -33,7 +33,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void init() throws Exception {
+    public void init() {
         connection.startConnection();
     }
 
@@ -42,12 +42,12 @@ public class Main extends Application {
         connection.closeConnection();
     }
 
-    private static Server createServer() {
-        return new Server(55555, data -> Platform.runLater(() -> txtChat.appendText(data.toString() + "\n")));
+    private static Server createServer(int port) {
+        return new Server(port, data -> Platform.runLater(() -> txtChat.appendText(data.toString() + "\n")));
     }
 
-    private static Client createClient() {
-        return new Client("127.0.0.1", 55555, data -> Platform.runLater(() -> txtChat.appendText(data.toString() + "\n")));
+    private static Client createClient(int port) {
+        return new Client("127.0.0.1", port, data -> Platform.runLater(() -> txtChat.appendText(data.toString() + "\n")));
     }
 
     public static void main(String[] args) {

@@ -25,7 +25,7 @@ public abstract class NetworkConnection {
         connThread.setDaemon(true);
     }
 
-    void startConnection() throws Exception {
+    void startConnection() {
         connThread.start();
     }
 
@@ -81,7 +81,6 @@ public abstract class NetworkConnection {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(iV);
         output.write(cipherText);
-
         send(output.toByteArray());
     }
 

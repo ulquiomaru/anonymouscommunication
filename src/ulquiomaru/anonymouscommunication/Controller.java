@@ -29,14 +29,19 @@ public class Controller{
     private void initialize() { }
 
     @FXML
-    private void sendMessageClicked() throws Exception {
+    private void sendMessageClicked() {
         if (txtInput.getText().length() > 0) {
             String message = Main.isServer ? "Server: " : "Client: ";
             message += txtInput.getText();
-            txtChat.appendText(message + "\n");
-            txtInput.clear();
-            txtInput.requestFocus();
-            Main.connection.encryptMessage(message);
+
+            try {
+                Main.connection.encryptMessage(message);
+                txtChat.appendText(message + "\n");
+                txtInput.clear();
+                txtInput.requestFocus();
+            } catch (Exception e) {
+                txtChat.appendText("Failed to send message\n");
+            }
 //            Main.connection.send(message);
         }
     }
