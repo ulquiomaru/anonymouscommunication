@@ -3,7 +3,10 @@ package ulquiomaru.anonymouscommunication;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +29,7 @@ public abstract class NetworkConnection {
         connThread.start();
     }
 
-    void send(Serializable data) throws Exception {
+    private void send(Serializable data) throws Exception {
         connThread.out.writeObject(data);
     }
 
@@ -82,7 +85,7 @@ public abstract class NetworkConnection {
         send(output.toByteArray());
     }
 
-    void decryptMessage(byte[] data) throws Exception {
+    private void decryptMessage(byte[] data) throws Exception {
         Cipher cipher = Cipher.getInstance(MESSAGE_ALGORITHM_AES);
         byte[] iV = new byte[cipher.getBlockSize()];
         System.arraycopy(data, 0, iV, 0, iV.length);

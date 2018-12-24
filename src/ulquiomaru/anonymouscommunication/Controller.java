@@ -1,15 +1,15 @@
 package ulquiomaru.anonymouscommunication;
 
-import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
 public class Controller{
+
+    @FXML
+    Label labelTop;
 
     @FXML
     private Button btnMessage;
@@ -18,7 +18,7 @@ public class Controller{
     private Button btnFile;
 
     @FXML
-    public TextArea txtChat;
+    TextArea txtChat;
 
     @FXML
     private TextField txtInput;
