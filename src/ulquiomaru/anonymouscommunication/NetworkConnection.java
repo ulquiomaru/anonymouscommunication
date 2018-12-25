@@ -103,44 +103,31 @@ public abstract class NetworkConnection {
                     RNG.nextBytes(iV);
                     cipher.init(Cipher.ENCRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
 
-                    CipherInputStream file = new CipherInputStream(new FileInputStream( new File("fileToSend", "r")), cipher);
+
+                    CipherInputStream file = new CipherInputStream(new FileInputStream(new File("fileToSend")), cipher);
                     byte[] data = new byte[chunkSize];
                     int dataSize = 0;
 
-//                    final int fileLength = (int) file.length();
-//                    out.writeInt(fileLength); // (1) fileLength
-
-                    //while ((dataSize = in.read(data)) >= 0) {
-                    while ((dataSize = in.read(data)) > 0) {
+                    out.write(iV);
+                    while ((dataSize = file.read(data)) > 0) {
                         out.write(data, 0, dataSize);
                     }
-
-                    while (i < fileChunks) {
-                        dataSize = file.read(data);
-                        // encrypt data
-                        out.writeInt(dataSize); // (3) chunkSize
-                        out.write(data, 0, dataSize); // (4) data
-                    }
-                    out.writeInt(-1); // (5) END of transfer
-
-
-
-
-//                        byte[] data = (byte[]) in.readObject();
-//                        String plainText = new String(decryptMessage(data), StandardCharsets.UTF_8);
-//                        onReceiveCallback.accept(plainText);
-
                 }
                 else {
-                    while (!sendFileCheck) { }  // hold until button clicked
-
                     Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
                     byte[] iV = new byte[cipher.getBlockSize()];
                     in.read(iV);
                     cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
 
-                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream( new File("fileReceived", "rw"), true), cipher);
-                    // client
+                    File rFile = new File("fileReceived");
+                    if (rFile.exists()) rFile.delete();
+                    rFile.createNewFile();
+                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream(new File("fileReceived"), true), cipher);
+                    byte[] data = new byte[chunkSize];
+
+                    while (in.read(data) > 0) {
+                        file.write(data);
+                    }
                 }
 
             } catch (Exception e) {

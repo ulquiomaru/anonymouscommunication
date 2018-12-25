@@ -48,7 +48,7 @@ public class Controller{
 
     @FXML
     private void sendFileClicked() {
-        txtChat.appendText("Send File Button Clicked!\n");
+        txtChat.appendText("File Transfer has begun!\n");
         Main.connection.initiateFileTransfer();
         txtInput.requestFocus();
     }
