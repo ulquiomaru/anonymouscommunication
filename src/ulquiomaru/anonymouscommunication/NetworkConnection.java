@@ -81,7 +81,7 @@ public abstract class NetworkConnection {
     private class FileConnectionThread extends Thread {
         private Socket socket;
         private DataOutputStream out;
-        private final int chunkSize = 256000;
+        private final int chunkSize = 1024;
 
         @Override
         public void run() {
@@ -122,7 +122,7 @@ public abstract class NetworkConnection {
                     File rFile = new File("fileReceived");
                     if (rFile.exists()) rFile.delete();
                     rFile.createNewFile();
-                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream(new File("fileReceived"), true), cipher);
+                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream(rFile, true), cipher);
                     byte[] data = new byte[chunkSize];
 
                     while (in.read(data) > 0) {
