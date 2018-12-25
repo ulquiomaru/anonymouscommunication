@@ -1,12 +1,11 @@
 package ulquiomaru.anonymouscommunication;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +17,9 @@ public abstract class NetworkConnection {
     private ConnectionThread connThread = new ConnectionThread();
     private FileConnectionThread fileConnThread = new FileConnectionThread();
     private Consumer<Serializable> onReceiveCallback;
-    private static final String MESSAGE_ALGORITHM_AES = "AES/CBC/PKCS5Padding";
+    private static final String MESSAGE_ALGORITHM_AES = "AES/CFB/PKCS5Padding"; // Stream Cipher
+    private static final String FILE_ALGORITHM_AES = "AES/CBC/PKCS5Padding"; // Block Cipher
+    private boolean sendFileCheck = false;
 
 
     NetworkConnection(Consumer<Serializable> onReceiveCallback) {
@@ -32,8 +33,12 @@ public abstract class NetworkConnection {
         fileConnThread.start();
     }
 
-    private void send(Serializable data, ObjectOutputStream out) throws Exception {
-        out.writeObject(data);
+    private void send(Serializable data) throws Exception {
+        connThread.out.writeObject(data);
+    }
+
+    private void sendFile(byte[] data) throws Exception {
+        fileConnThread.out.write(data);
     }
 
     void closeConnection() throws Exception {
@@ -75,24 +80,69 @@ public abstract class NetworkConnection {
 
     private class FileConnectionThread extends Thread {
         private Socket socket;
-        private ObjectOutputStream out;
+        private DataOutputStream out;
+        private final int chunkSize = 256000;
 
         @Override
         public void run() {
             try (ServerSocket server = isServer() ? new ServerSocket(getPort()+1) : null;
                  Socket socket = isServer() ? server.accept() : new Socket(getIP(), getPort()+1);
-                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                 DataInputStream in = new DataInputStream(socket.getInputStream())) {
 
                 this.socket = socket;
                 this.out = out;
                 socket.setTcpNoDelay(true);
 
-                while (true) {
-                    byte[] data = (byte[]) in.readObject();
-                    String plainText = new String(decryptMessage(data), StandardCharsets.UTF_8);
-                    onReceiveCallback.accept(plainText);
+                if (isServer()) {
+                    while (!sendFileCheck) { } // hold until button clicked
+
+                    Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
+                    byte[] iV = new byte[cipher.getBlockSize()];
+                    SecureRandom RNG = new SecureRandom();
+                    RNG.nextBytes(iV);
+                    cipher.init(Cipher.ENCRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
+
+                    CipherInputStream file = new CipherInputStream(new FileInputStream( new File("fileToSend", "r")), cipher);
+                    byte[] data = new byte[chunkSize];
+                    int dataSize = 0;
+
+//                    final int fileLength = (int) file.length();
+//                    out.writeInt(fileLength); // (1) fileLength
+
+                    //while ((dataSize = in.read(data)) >= 0) {
+                    while ((dataSize = in.read(data)) > 0) {
+                        out.write(data, 0, dataSize);
+                    }
+
+                    while (i < fileChunks) {
+                        dataSize = file.read(data);
+                        // encrypt data
+                        out.writeInt(dataSize); // (3) chunkSize
+                        out.write(data, 0, dataSize); // (4) data
+                    }
+                    out.writeInt(-1); // (5) END of transfer
+
+
+
+
+//                        byte[] data = (byte[]) in.readObject();
+//                        String plainText = new String(decryptMessage(data), StandardCharsets.UTF_8);
+//                        onReceiveCallback.accept(plainText);
+
                 }
+                else {
+                    while (!sendFileCheck) { }  // hold until button clicked
+
+                    Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
+                    byte[] iV = new byte[cipher.getBlockSize()];
+                    in.read(iV);
+                    cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
+
+                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream( new File("fileReceived", "rw"), true), cipher);
+                    // client
+                }
+
             } catch (Exception e) {
                 onReceiveCallback.accept("Connection closed");
                 e.printStackTrace();
@@ -113,9 +163,9 @@ public abstract class NetworkConnection {
         output.write(iV);
         output.write(cipherText);
         if (mode == 1)
-            send(output.toByteArray(), connThread.out);
+            send(output.toByteArray());
         else if (mode == 2)
-            send(output.toByteArray(), fileConnThread.out);
+            sendFile(output.toByteArray());
     }
 
     private byte[] decryptMessage(byte[] data) throws Exception {
@@ -128,5 +178,9 @@ public abstract class NetworkConnection {
         cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
 
         return cipher.doFinal(cipherText);
+    }
+
+    void initiateFileTransfer() {
+        sendFileCheck = true;
     }
 }
