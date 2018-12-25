@@ -13,7 +13,7 @@
    <bottom>
       <HBox prefHeight="33.0" prefWidth="800.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField fx:id="txtInput" prefHeight="25.0" prefWidth="617.0">
+            <TextField fx:id="txtInput" prefHeight="25.0" prefWidth="599.0">
                <HBox.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </HBox.margin>
@@ -23,7 +23,7 @@
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </HBox.margin>
             </Button>
-            <Button fx:id="btnFile" mnemonicParsing="false" onAction="#sendFileClicked" text="Send File">
+            <Button fx:id="btnFile" mnemonicParsing="false" onAction="#sendFileClicked" text="Transfer File">
                <HBox.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </HBox.margin>

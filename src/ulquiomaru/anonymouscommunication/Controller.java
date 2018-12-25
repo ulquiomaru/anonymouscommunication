@@ -35,7 +35,7 @@ public class Controller{
             message += txtInput.getText();
 
             try {
-                Main.connection.encryptMessage(message);
+                Main.connection.encryptMessage(message, 1);
                 txtChat.appendText(message + "\n");
                 txtInput.clear();
                 txtInput.requestFocus();

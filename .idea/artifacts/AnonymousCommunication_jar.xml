@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="AnonymousCommunication:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/AnonymousCommunication_jar</output-path>
+    <root id="archive" name="AnonymousCommunication.jar">
+      <element id="module-output" name="AnonymousCommunication" />
+    </root>
+  </artifact>
+</component>
