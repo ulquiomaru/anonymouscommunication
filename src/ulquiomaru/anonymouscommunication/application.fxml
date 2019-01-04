@@ -8,7 +8,7 @@
       <Label fx:id="labelTop" prefHeight="28.0" prefWidth="176.0" text="Anonymous Communication App" BorderPane.alignment="CENTER" />
    </top>
    <center>
-      <TextArea fx:id="txtChat" disable="true" editable="false" focusTraversable="false" prefHeight="200.0" prefWidth="200.0" wrapText="true" BorderPane.alignment="CENTER" />
+      <TextArea fx:id="txtChat" editable="false" focusTraversable="false" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" wrapText="true" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
       <HBox prefHeight="33.0" prefWidth="800.0" BorderPane.alignment="CENTER">

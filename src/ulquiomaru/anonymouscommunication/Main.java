@@ -11,10 +11,9 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    static boolean isServer = false;
-
+    static boolean isServer;
     private static TextArea txtChat;
-    static NetworkConnection connection = isServer ? createServer(55555) : createClient(55555);
+    static NetworkConnection connection;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -34,6 +33,8 @@ public class Main extends Application {
 
     @Override
     public void init() {
+        isServer = getParameters().getRaw().get(0).toLowerCase().equals("server");
+        connection = isServer ? createServer(55555) : createClient(55555);
         connection.startConnection();
     }
 

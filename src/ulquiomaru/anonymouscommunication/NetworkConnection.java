@@ -94,40 +94,46 @@ public abstract class NetworkConnection {
                 this.out = out;
                 socket.setTcpNoDelay(true);
 
+                byte[] data = new byte[chunkSize];
+                int dataSize;
+
                 if (isServer()) {
-                    while (!sendFileCheck) { } // hold until button clicked
+                    while (!sendFileCheck); // hold until button clicked
 
                     Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
                     byte[] iV = new byte[cipher.getBlockSize()];
                     SecureRandom RNG = new SecureRandom();
                     RNG.nextBytes(iV);
                     cipher.init(Cipher.ENCRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
-
-
                     CipherInputStream file = new CipherInputStream(new FileInputStream(new File("fileToSend")), cipher);
-                    byte[] data = new byte[chunkSize];
-                    int dataSize = 0;
 
                     out.write(iV);
+//                    out.flush();
                     while ((dataSize = file.read(data)) > 0) {
                         out.write(data, 0, dataSize);
                     }
+                    out.close();
+                    while (true);
                 }
                 else {
                     Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
-                    byte[] iV = new byte[cipher.getBlockSize()];
-                    in.read(iV);
-                    cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
-
                     File rFile = new File("fileReceived");
                     if (rFile.exists()) rFile.delete();
                     rFile.createNewFile();
-                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream(rFile, true), cipher);
-                    byte[] data = new byte[chunkSize];
+                    byte[] iV = new byte[cipher.getBlockSize()];
 
-                    while (in.read(data) > 0) {
-                        file.write(data);
+                    while (in.available() < iV.length);
+                    in.read(iV, 0, iV.length);
+//                    while (in.read(iV) <= 0);
+
+                    cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
+                    CipherOutputStream file = new CipherOutputStream(new FileOutputStream(rFile, true), cipher);
+
+                    while ((dataSize = in.read(data)) > 0) {
+                        file.write(data, 0, dataSize);
                     }
+                    file.close();
+                    while (true);
                 }
 
             } catch (Exception e) {
