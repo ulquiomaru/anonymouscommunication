@@ -100,6 +100,8 @@ public abstract class NetworkConnection {
                 if (isServer()) {
                     while (!sendFileCheck); // hold until button clicked
 
+                    onReceiveCallback.accept("File transfer has begun!");
+
                     Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
                     byte[] iV = new byte[cipher.getBlockSize()];
                     SecureRandom RNG = new SecureRandom();
@@ -113,7 +115,8 @@ public abstract class NetworkConnection {
                         out.write(data, 0, dataSize);
                     }
                     out.close();
-                    while (true);
+
+                    onReceiveCallback.accept("File transfer complete.");
                 }
                 else {
                     Cipher cipher = Cipher.getInstance(FILE_ALGORITHM_AES);
@@ -122,9 +125,11 @@ public abstract class NetworkConnection {
                     rFile.createNewFile();
                     byte[] iV = new byte[cipher.getBlockSize()];
 
-                    while (in.available() < iV.length);
+//                    while (in.available() < iV.length);
                     in.read(iV, 0, iV.length);
 //                    while (in.read(iV) <= 0);
+
+                    onReceiveCallback.accept("File transfer has begun!");
 
                     cipher.init(Cipher.DECRYPT_MODE, getAesKey(), new IvParameterSpec(iV));
                     CipherOutputStream file = new CipherOutputStream(new FileOutputStream(rFile, true), cipher);
@@ -133,7 +138,7 @@ public abstract class NetworkConnection {
                         file.write(data, 0, dataSize);
                     }
                     file.close();
-                    while (true);
+                    onReceiveCallback.accept("File transfer complete.");
                 }
 
             } catch (Exception e) {
