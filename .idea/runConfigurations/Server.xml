@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Server" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ulquiomaru.anonymouscommunication.Main" />
+    <module name="AnonymousCommunication" />
+    <option name="PROGRAM_PARAMETERS" value="server" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="ulquiomaru.anonymouscommunication.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
